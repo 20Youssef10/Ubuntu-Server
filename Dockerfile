@@ -10,8 +10,8 @@ RUN apt-get update && apt-get upgrade -y
 # تثبيت الأدوات الأساسية - المرحلة الثانية
 RUN apt-get install -y \
     curl wget git build-essential gcc g++ make cmake \
-    vim nano emacs htop top iotop \
-    tmux screen byobu \
+    vim nano emacs htop procps \
+    tmux screen \
     net-tools iputils-ping dnsutils \
     openssh-server openssh-client
 
@@ -27,16 +27,13 @@ RUN apt-get install -y \
     postgresql postgresql-contrib \
     mysql-server \
     redis-server \
-    mongodb \
     sqlite3
 
 # تثبيت خوادم الويب والأدوات - المرحلة الخامسة
 RUN apt-get install -y \
     nginx apache2 \
-    docker.io \
-    git-flow \
+    docker.io git-flow \
     zip unzip tar gzip bzip2 \
-    ffmpeg imagemagick ghostscript \
     graphviz supervisor \
     systemd systemd-sysv cron logrotate sysstat \
     netcat-openbsd socat telnet \
