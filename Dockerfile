@@ -4,69 +4,52 @@ FROM ubuntu:latest
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
 
-# تحديث النظام الكامل
-RUN apt-get update && apt-get upgrade -y && apt-get install -y \
-    # أدوات النظام الأساسية
+# تحديث النظام - المرحلة الأولى
+RUN apt-get update && apt-get upgrade -y
+
+# تثبيت الأدوات الأساسية - المرحلة الثانية
+RUN apt-get install -y \
     curl wget git build-essential gcc g++ make cmake \
     vim nano emacs htop top iotop \
     tmux screen byobu \
     net-tools iputils-ping dnsutils \
-    openssh-server openssh-client \
-    \
-    # أدوات التطوير
+    openssh-server openssh-client
+
+# تثبيت لغات البرمجة - المرحلة الثالثة
+RUN apt-get install -y \
     nodejs npm yarn \
     python3 python3-pip python3-dev python3-venv \
     ruby golang rust \
-    openjdk-17-jdk openjdk-17-jre \
-    \
-    # قواعد البيانات
+    openjdk-17-jdk openjdk-17-jre
+
+# تثبيت قواعس البيانات - المرحلة الرابعة
+RUN apt-get install -y \
     postgresql postgresql-contrib \
     mysql-server \
     redis-server \
     mongodb \
-    sqlite3 \
-    \
-    # خوادم الويب
+    sqlite3
+
+# تثبيت خوادم الويب والأدوات - المرحلة الخامسة
+RUN apt-get install -y \
     nginx apache2 \
-    \
-    # أدوات إضافية
     docker.io \
     git-flow \
     zip unzip tar gzip bzip2 \
-    ffmpeg imagemagick \
-    ghostscript \
-    graphviz \
-    supervisor \
-    pm2 \
-    \
-    # أدوات النظام والمراقبة
-    systemd systemd-sysv \
-    cron \
-    logrotate \
-    sysstat \
-    \
-    # أدوات الشبكة
-    netcat-openbsd socat \
-    telnet \
-    curl wget \
-    \
-    # مكتبات وحزم شهيرة
+    ffmpeg imagemagick ghostscript \
+    graphviz supervisor \
+    systemd systemd-sysv cron logrotate sysstat \
+    netcat-openbsd socat telnet \
     libssl-dev libffi-dev \
     zlib1g-dev libjpeg-dev libpng-dev \
-    \
-    # أدوات إضافية مفيدة
-    tmux git jq \
-    \
-    # Web Terminal
-    wget ca-certificates \
-    && rm -rf /var/lib/apt/lists*
+    jq ca-certificates
 
-# تثبيت ttyd (Web Terminal)
-RUN mkdir -p /tmp/ttyd && cd /tmp/ttyd && \
-    wget https://github.com/tsl0922/ttyd/releases/download/1.7.7/ttyd.linux.x86_64 -O ttyd && \
-    chmod +x ttyd && \
-    mv ttyd /usr/local/bin/ && \
-    cd / && rm -rf /tmp/ttyd
+# تثبيت npm packages عالمياً
+RUN npm install -g \
+    express @nestjs/cli \
+    typescript ts-node \
+    pm2 webpack webpack-cli \
+    eslint prettier nodemon http-server
 
 # تثبيت أدوات Python الشهيرة
 RUN pip3 install --upgrade pip setuptools wheel && \
@@ -75,21 +58,19 @@ RUN pip3 install --upgrade pip setuptools wheel && \
     requests beautifulsoup4 lxml \
     pandas numpy scipy scikit-learn \
     sqlalchemy psycopg2-binary pymongo \
-    celery redis \
-    gunicorn uvicorn \
-    jupyter jupyterlab \
-    pytest pytest-cov \
+    celery redis gunicorn uvicorn \
+    jupyter jupyterlab pytest pytest-cov \
     black flake8 pylint
 
-# تثبيت npm packages عالمياً
-RUN npm install -g \
-    express @nestjs/cli \
-    typescript ts-node \
-    pm2 \
-    webpack webpack-cli \
-    eslint prettier \
-    nodemon \
-    http-server
+# تثبيت ttyd (Web Terminal)
+RUN mkdir -p /tmp/ttyd && cd /tmp/ttyd && \
+    wget https://github.com/tsl0922/ttyd/releases/download/1.7.7/ttyd.linux.x86_64 -O ttyd 2>/dev/null && \
+    chmod +x ttyd && \
+    mv ttyd /usr/local/bin/ && \
+    cd / && rm -rf /tmp/ttyd
+
+# تنظيف المخزن المؤقت
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # إنشاء مجلد التطبيق
 RUN mkdir -p /app /home/ubuntu
@@ -147,7 +128,7 @@ WORKDIR /app
 
 # تثبيت Cockpit (لوحة التحكم الويب)
 RUN apt-get update && apt-get install -y cockpit cockpit-system && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # إنشاء ملف بدء التشغيل
 RUN cat > /startup.sh << 'EOF'
