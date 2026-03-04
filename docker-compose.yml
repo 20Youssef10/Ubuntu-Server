@@ -10,52 +10,17 @@ services:
       - "22:22"           # SSH
       - "3000:3000"       # App
       - "3001:3001"       # Dashboard
-      - "5432:5432"       # PostgreSQL
-      - "3306:3306"       # MySQL
-      - "6379:6379"       # Redis
-      - "8000:8000"       # API
       - "7681:7681"       # Web Terminal (ttyd)
       - "9090:9090"       # Cockpit
     environment:
       - NODE_ENV=development
       - PYTHONUNBUFFERED=1
-      - POSTGRES_PASSWORD=postgres
-      - MYSQL_ROOT_PASSWORD=root
     volumes:
       - ./:/app
-      - /var/run/docker.sock:/var/run/docker.sock
     stdin_open: true
     tty: true
     networks:
       - ubuntu-network
-
-  postgresql:
-    image: postgres:15-alpine
-    container_name: ubuntu-postgres
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: railway_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - ubuntu-network
-
-  redis:
-    image: redis:7-alpine
-    container_name: ubuntu-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - ubuntu-network
-
-volumes:
-  postgres_data:
-  redis_data:
 
 networks:
   ubuntu-network:
