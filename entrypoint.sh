@@ -1,25 +1,16 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
 
-# Ensure workspace exists and ownership is correct
-mkdir -p "${WORKDIR}"
-chown -R dev:dev "${WORKDIR}"
+mkdir -p /workspace
+chown -R dev:dev /workspace
 
-# If user passed VNC_PASSWORD or CODE_PASSWORD via env, (re)write passwd
-if [ -n "${VNC_PASSWORD:-}" ]; then
-  echo "${VNC_PASSWORD}" | x11vnc -storepasswd - /home/dev/.vnc/passwd || true
-  chown dev:dev /home/dev/.vnc/passwd || true
-fi
+Xvfb :1 -screen 0 1280x800x24 &
 
-# set locale to avoid warnings
-if ! grep -q "en_US.UTF-8" /etc/locale.gen 2>/dev/null; then
-  echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen || true
-fi
-locale-gen || true
+export DISPLAY=:1
 
-# allow running commands as dev by default
-export HOME=/home/dev
-export USER=dev
+startxfce4 &
 
-# start supervisord (it will manage services and autorestart)
-exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+x11vnc -display :1 -forever -shared -rfbport 5901 &
+
+websockify 6080 localhost:5901 --web=/opt/novnc &
+
+exec /usr/bin/supervisord
