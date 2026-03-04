@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  ubuntu:
+    build: .
+    container_name: ubuntu-railway
+    ports:
+      - "80:80"           # HTTP
+      - "443:443"         # HTTPS
+      - "22:22"           # SSH
+      - "3000:3000"       # App
+      - "3001:3001"       # Dashboard
+      - "5432:5432"       # PostgreSQL
+      - "3306:3306"       # MySQL
+      - "6379:6379"       # Redis
+      - "8000:8000"       # API
+      - "7681:7681"       # Web Terminal (ttyd)
+      - "9090:9090"       # Cockpit
+    environment:
+      - NODE_ENV=development
+      - PYTHONUNBUFFERED=1
+      - POSTGRES_PASSWORD=postgres
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - ./:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    stdin_open: true
+    tty: true
+    networks:
+      - ubuntu-network
+
+  postgresql:
+    image: postgres:15-alpine
+    container_name: ubuntu-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: railway_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ubuntu-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: ubuntu-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ubuntu-network
+
+  mongo:
+    image: mongo:7
+    container_name: ubuntu-mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo
+      MONGO_INITDB_ROOT_PASSWORD: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - ubuntu-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  mongo_data:
+
+networks:
+  ubuntu-network:
+    driver: bridge
